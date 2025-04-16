@@ -1,0 +1,11 @@
+.vs/ 
+__pycache__/ 
+*.pyc 
+*.pyo 
+*.pyd 
+*.json 
+venv/ 
+env/ 
+*.log 
+*.tmp 
+.vs/ 
