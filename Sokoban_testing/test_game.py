@@ -1,9 +1,14 @@
-﻿# Nhập các thư viện cần thiết
+﻿import sys
+import os
+
+# Thêm thư mục gốc của dự án vào sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Nhập các thư viện cần thiết
 import unittest
 from Sokoban_core.game import SokobanGame
 from Sokoban_core.movement import move, undo
 from Sokoban_core.check_win import has_won
-from Sokoban_algorithms.solver import bfs_solver, a_star_solver
+from Sokoban_algorithms.solver import bfs_solver, a_star_solver, greedy_solver, beam_search_solver
 
 class TestSokoban(unittest.TestCase):
     def setUp(self):
@@ -67,6 +72,34 @@ class TestSokoban(unittest.TestCase):
         path = a_star_solver(self.game)
         self.assertIsNotNone(path)
         self.assertTrue(isinstance(path, list))
+
+    def test_bfs_solver_win(self):
+        path = bfs_solver(self.game)
+        game_copy = self.game.copy()
+        for direction in path:
+            move(game_copy, direction)
+        self.assertTrue(has_won(game_copy))
+
+    def test_a_star_solver_win(self):
+        path = a_star_solver(self.game)
+        game_copy = self.game.copy()
+        for direction in path:
+            move(game_copy, direction)
+        self.assertTrue(has_won(game_copy))
+
+    def test_greedy_solver_win(self):
+        path = greedy_solver(self.game)
+        game_copy = self.game.copy()
+        for direction in path:
+            move(game_copy, direction)
+        self.assertTrue(has_won(game_copy))
+
+    def test_beam_search_solver_win(self):
+        path = beam_search_solver(self.game)
+        game_copy = self.game.copy()
+        for direction in path:
+            move(game_copy, direction)
+        self.assertTrue(has_won(game_copy))
 
 if __name__ == '__main__':
     unittest.main()

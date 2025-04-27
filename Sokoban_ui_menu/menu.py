@@ -8,10 +8,14 @@ from Sokoban_core.movement import move, undo
 from Sokoban_core.check_win import has_won
 from Sokoban_core.save_load import save_state, load_state
 from Sokoban_graphics.render import SokobanRenderer
-from Sokoban_algorithms.solver import bfs_solver, a_star_solver
+from Sokoban_algorithms.solver import bfs_solver, a_star_solver, greedy_solver, beam_search_solver
+
+def add_hover_effect(button):
+    button.bind("<Enter>", lambda e: button.config(bg="#666"))
+    button.bind("<Leave>", lambda e: button.config(bg="#444"))
 
 class MenuFrame(tk.Frame):
-    def __init__(self, master, on_start, on_bfs, on_astar, on_quit):
+    def __init__(self, master, on_start, on_bfs, on_astar, on_greedy, on_beam, on_quit):
         # Khởi tạo khung menu
         super().__init__(master, bg="#000032")
         
@@ -52,6 +56,14 @@ class MenuFrame(tk.Frame):
                                font=("Arial", 14), bg="#444", fg="white", width=15)
         astar_button.pack(pady=10)
         
+        greedy_button = tk.Button(button_frame, text="Chạy Greedy Solver", command=on_greedy,
+                                font=("Arial", 14), bg="#444", fg="white", width=15)
+        greedy_button.pack(pady=10)
+        
+        beam_button = tk.Button(button_frame, text="Chạy Beam Search", command=on_beam,
+                              font=("Arial", 14), bg="#444", fg="white", width=15)
+        beam_button.pack(pady=10)
+
         quit_button = tk.Button(button_frame, text="Thoát", command=on_quit,
                               font=("Arial", 14), bg="#444", fg="white", width=15)
         quit_button.pack(pady=10)
@@ -74,6 +86,13 @@ class MenuFrame(tk.Frame):
             instruction_label = tk.Label(instruction_frame, text=line, font=("Arial", 12),
                                        bg="#000032", fg="#b4b4b4")
             instruction_label.pack()
+
+        add_hover_effect(start_button)
+        add_hover_effect(bfs_button)
+        add_hover_effect(astar_button)
+        add_hover_effect(greedy_button)
+        add_hover_effect(beam_button)
+        add_hover_effect(quit_button)
 
 class StatusFrame(tk.Frame):
     def __init__(self, master):
@@ -130,6 +149,8 @@ class SokobanApp:
             self.start_game,
             self.run_bfs_solver,
             self.run_astar_solver,
+            self.run_greedy_solver,
+            self.run_beam_search_solver,
             self.quit_game
         )
         self.menu_frame.pack(fill="both", expand=True)
@@ -265,6 +286,48 @@ class SokobanApp:
         
         self.root.after(100, run_astar)
     
+    def run_greedy_solver(self):
+        # Chạy solver Greedy
+        self.start_game()
+        self.root.title("Sokoban - Đang giải bằng Greedy...")
+        self.status_frame.set_status("Đang chạy solver Greedy...")
+        
+        # Chạy Greedy trong một luồng riêng
+        def run_greedy():
+            self.ai_mode = "greedy"
+            self.ai_path = greedy_solver(self.game, self.status_frame.set_status)
+            self.ai_step = 0
+            
+            if not self.ai_path:
+                self.status_frame.set_status("Greedy không tìm thấy lời giải")
+                self.ai_mode = None
+            else:
+                self.status_frame.set_status(f"Greedy tìm thấy lời giải: {len(self.ai_path)} bước")
+                self.execute_ai_move()
+        
+        self.root.after(100, run_greedy)
+    
+    def run_beam_search_solver(self):
+        # Chạy solver Beam Search
+        self.start_game()
+        self.root.title("Sokoban - Đang giải bằng Beam Search...")
+        self.status_frame.set_status("Đang chạy solver Beam Search...")
+        
+        # Chạy Beam Search trong một luồng riêng
+        def run_beam():
+            self.ai_mode = "beam"
+            self.ai_path = beam_search_solver(self.game, self.status_frame.set_status)
+            self.ai_step = 0
+            
+            if not self.ai_path:
+                self.status_frame.set_status("Beam Search không tìm thấy lời giải")
+                self.ai_mode = None
+            else:
+                self.status_frame.set_status(f"Beam Search tìm thấy lời giải: {len(self.ai_path)} bước")
+                self.execute_ai_move()
+        
+        self.root.after(100, run_beam)
+
     def execute_ai_move(self):
         # Thực hiện bước di chuyển của AI
         if self.ai_mode and self.ai_path and self.ai_step < len(self.ai_path):
