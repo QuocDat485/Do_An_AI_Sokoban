@@ -4,6 +4,9 @@
 
 def move(game, direction):
     # Thực hiện di chuyển người chơi hoặc đẩy hộp
+    if not isinstance(direction, tuple) or len(direction) != 2:
+        return False
+    
     px, py = game.player_pos
     dx, dy = direction
     new_px, new_py = px + dx, py + dy

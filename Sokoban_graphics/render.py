@@ -48,6 +48,12 @@ class SokobanRenderer(tk.Canvas):
             "box_on_target": "box_on_target.png"
         }
         
+        # Tạo thư mục sprite nếu chưa tồn tại
+        sprites_dir = os.path.join(os.getcwd(), "sprites")
+        if not os.path.exists(sprites_dir):
+            os.makedirs(sprites_dir)
+            print(f"Đã tạo thư mục sprites: {sprites_dir}")
+        
         # Thử tìm và tải từng hình ảnh
         for sprite_dir in sprite_dirs:
             if os.path.exists(sprite_dir):
@@ -58,26 +64,24 @@ class SokobanRenderer(tk.Canvas):
                         if os.path.exists(img_path):
                             # Tải hình ảnh bằng PIL, thay đổi kích thước để phù hợp với ô
                             img = Image.open(img_path)
+                            if img.size[0] <= 0 or img.size[1] <= 0:
+                                print(f"Hình ảnh {filename} không hợp lệ: kích thước không hợp lệ")
+                                continue
                             img = img.resize((self.tile_size, self.tile_size), Image.Resampling.LANCZOS)
                             self.images[key] = ImageTk.PhotoImage(img)
                             print(f"Đã tải hình ảnh: {img_path}")
                     except Exception as e:
-                        print(f"Lỗi khi tải hình ảnh {filename}: {e}")
+                        print(f"Lỗi khi tải hình ảnh {filename} từ {img_path}: {e}")
                 
-                # Nếu tìm thấy ít nhất một số hình ảnh, ngừng tìm kiếm
-                if self.images:
+                # Nếu tìm thấy tất cả hình ảnh cần thiết, ngừng tìm kiếm
+                if len(self.images) == len(image_files):
                     break
         
-        # Nếu không tìm thấy thư mục sprite, thông báo người dùng
-        if not self.images:
-            print("Không tìm thấy hình ảnh sprite. Sử dụng hình dạng màu làm dự phòng.")
-            
-            # Tạo thư mục sprite nếu chưa tồn tại
-            sprites_dir = os.path.join(os.getcwd(), "sprites")
-            if not os.path.exists(sprites_dir):
-                os.makedirs(sprites_dir)
-                print(f"Đã tạo thư mục sprites: {sprites_dir}")
-                print(f"Vui lòng đặt các hình ảnh PNG cho wall, empty, target, player, box, và box_on_target vào thư mục này.")
+        # Nếu không tìm thấy tất cả hình ảnh, thông báo người dùng
+        missing_images = [key for key in image_files if key not in self.images]
+        if missing_images:
+            print(f"Không tìm thấy các hình ảnh: {', '.join(missing_images)}. Sử dụng hình dạng màu làm dự phòng.")
+            print(f"Vui lòng đặt các hình ảnh PNG ({', '.join(image_files.values())}) vào thư mục {sprites_dir}.")
     
     def draw(self):
         # Xóa canvas

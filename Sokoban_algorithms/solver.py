@@ -8,7 +8,6 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Sokoban_core')))
 
-
 def manhattan_distance(pos1, pos2):
     # Tính khoảng cách Manhattan giữa hai điểm
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
@@ -28,12 +27,12 @@ def heuristic(box_positions, targets):
 
 def generate_next_states(game):
     # Tạo các trạng thái tiếp theo có thể từ trạng thái hiện tại
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Lên, xuống, trái, phải
     next_states = []
-    for dx, dy in directions:
+    for direction in directions:
         new_game = game.copy()
-        if move(new_game, (dx, dy)):
-            next_states.append((new_game, (dx, dy)))
+        if move(new_game, direction):
+            next_states.append((new_game, direction))
     return next_states
 
 def bfs_solver(game, status_callback=None):
